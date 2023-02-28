@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 const SoundInput = () => {
-  const [recording, setRecording] = useState(false);
-  const [audioURL, setAudioURL] = useState('');
-  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recording, setRecording] = useState<boolean>(false);
+  const [audioURL, setAudioURL] = useState<string>('');
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -27,7 +27,8 @@ const SoundInput = () => {
   };
 
   const stopRecording = () => {
-    mediaRecorder.stop();
+    if(mediaRecorder !== null)
+        mediaRecorder.stop();
   };
 
   return (
