@@ -2,30 +2,47 @@ import streamlit as st
 from st_custom_components import st_audiorec
 import soundfile as sf
 import numpy as np
-import pickle
+import tensorflow as tf
+from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.preprocessing import image
+import wave
 import io
+import os
+import matplotlib.pyplot as plt
+import pylab
 
 # loading the saved model 
-# loaded_model = pickle.load(open('C:/Users/KIIT/Desktop/Internship/streamlit/streamlit_audio_recorder/trained_model.sav', 'rb'))
+new_model = tf.keras.models.load_model('saved_model/my_model')
+# new_model.summary()
+
+def get_wav_info(wav_file):
+    wav = wave.open(wav_file, 'r')
+    frames = wav.readframes(-1)
+    sound_info = pylab.frombuffer(frames, 'int16')
+    frame_rate = wav.getframerate()
+    wav.close()
+    return sound_info, frame_rate
+
+# For every recording, make a spectogram and save it as label_speaker_no.png
+# if not os.path.exists(os.path.join(OUTPUT_DIR, 'audio-images')):
+#     os.mkdir(os.path.join(OUTPUT_DIR, 'audio-images'))
 
 # Talking to the model
-def woodcutting_sound(wav_audio_data, audio_file):
-    pass
-
-# DESIGN implement changes to the standard streamlit UI/UX
-# --> optional, not relevant for the functionality of the component!
-st.set_page_config(page_title="Audio Classifier")
-# Design move app further up and remove top padding
-st.markdown('''<style>.css-1egvi7u {margin-top: -5rem; }</style>''',
-            unsafe_allow_html=True)
-# Design change st.Audio to fixed height of 45 pixels
-st.markdown('''<style>.stAudio {height: 45px;}</style>''',
-            unsafe_allow_html=True)
-# Design change hyperlink href link color
-st.markdown('''<style>.css-v37k9u a {color: #ff4c4b;}</style>''',
-            unsafe_allow_html=True)  # darkmode
-st.markdown('''<style>.css-nlntq9 a {color: #ff4c4b;}</style>''',
-            unsafe_allow_html=True)  # lightmode
+def woodcutting_sound(wav_audio_data):
+    sound_info, frame_rate = get_wav_info(wav_audio_data)
+    pylab.specgram(sound_info, Fs=frame_rate)
+    pylab.savefig(f'{wav_audio_data}.png')
+    fp = f'{wav_audio_data}.png'
+    pylab.close()
+    img = image.load_img(fp,target_size=(256, 256))
+    img_array = image.img_to_array(img)
+    img_batch = np.expand_dims(img_array, axis=0)
+    img_preprocessed = preprocess_input(img_batch)
+    prediction = new_model.predict(img_preprocessed)
+    print(prediction)
+    x_labels = ['0', '1']
+    plt.bar(x_labels, tf.nn.softmax(prediction[0]))
+    plt.show()
 
 def audiorec_demo_app():
     # TITLE
@@ -49,6 +66,10 @@ def audiorec_demo_app():
         col_playback, col_space = st.columns([0.58,0.42])
         with col_playback:
             st.audio(wav_audio_data, format='audio/wav')
+        
+        if st.button("Predict"): 
+            output = woodcutting_sound(wav_audio_data)
+            st.success(f"Predicted Output: {output}")
 
 
 if __name__ == '__main__':
