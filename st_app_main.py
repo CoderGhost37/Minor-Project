@@ -99,6 +99,10 @@ if audio_file is not None:
     st.write(f" - Sample rate: {samplerate}")
     st.write(f" - Duration: {len(data)/samplerate:.2f} seconds")
 
+    if st.button("Predict"): 
+        output = woodcutting_sound(audio_file)
+        st.success(f"Predicted Output: {output}")
+
     # Add an audio player to play the uploaded file
     try:
         st.audio(data, format=audio_file.type, sample_rate=samplerate)
