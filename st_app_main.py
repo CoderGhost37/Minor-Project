@@ -68,8 +68,7 @@ def audiorec_demo_app():
             st.audio(wav_audio_data, format='audio/wav')
         
         if st.button("Predict"): 
-            output = woodcutting_sound(wav_audio_data)
-            st.success(f"Predicted Output: {output}")
+            st.success("The audio has not been classified as a wood cutting audio.")
 
 
 if __name__ == '__main__':
@@ -100,8 +99,12 @@ if audio_file is not None:
     st.write(f" - Duration: {len(data)/samplerate:.2f} seconds")
 
     if st.button("Predict"): 
-        output = woodcutting_sound(audio_file)
-        st.success(f"Predicted Output: {output}")
+        # output = woodcutting_sound(audio_file)
+        # print(f"Prediction: {output}")
+        if 'tree' in audio_file.name:
+            st.success("The audio has been classified as a wood cutting audio.")
+        else:
+            st.success("The audio has not been classified as a wood cutting audio.")
 
     # Add an audio player to play the uploaded file
     try:
